@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sudoku Solver</title>
+  <style>
+    :root {
+      --bg: #f3fffb;
+      --cell-bg: #ffffff;
+      --hl: #e5fff9;
+      --solved: #dff5eb;
+      --text: #23423e;
+      --line: #000000;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      margin: 20px 0 10px;
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: 2px;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      grid-template-rows: repeat(9, 1fr);
+      gap: 6px;
+      margin: 12px;
+    }
+
+    .cell {
+      width: 42px;
+      height: 42px;
+      text-align: center;
+      font-size: 20px;
+      border: 1px solid #cfe6e0;
+      background: var(--cell-bg);
+      color: var(--text);
+      outline: none;
+    }
+
+    .cell:focus {
+      background: var(--hl);
+    }
+
+    /* 粗虚线分区 */
+    .cell.b-right {
+      border-right: 3px dashed var(--line);
+    }
+    .cell.b-bottom {
+      border-bottom: 3px dashed var(--line);
+    }
+
+    .controls {
+      margin: 10px 0 20px;
+    }
+
+    button {
+      padding: 6px 16px;
+      margin: 0 6px;
+      font-size: 14px;
+      background: #e0f7f2;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.85;
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 26px;
+      }
+      .cell {
+        width: 52px;
+        height: 52px;
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>SUDOKU SOLVER</h1>
+
+  <div class="board" id="board"></div>
+
+  <div class="controls">
+    <button onclick="clearBoard()">清空</button>
+    <button onclick="solve()">求解</button>
+  </div>
+
+  <script>
+    const board = document.getElementById('board');
+    const cells = [];
+
+    for (let r = 0; r < 9; r++) {
+      cells[r] = [];
+      for (let c = 0; c < 9; c++) {
+        const input = document.createElement('input');
+        input.className = 'cell';
+        input.maxLength = 1;
+        input.inputMode = 'numeric';
+
+        if (c === 2 || c === 5) input.classList.add('b-right');
+        if (r === 2 || r === 5) input.classList.add('b-bottom');
+
+        input.addEventListener('input', () => {
+          if (!/^[1-9]$/.test(input.value)) input.value = '';
+        });
+
+        board.appendChild(input);
+        cells[r][c] = input;
+      }
+    }
+
+    function getGrid() {
+      return cells.map(row => row.map(c => parseInt(c.value) || 0));
+    }
+
+    function setGrid(grid) {
+      for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+          if (!cells[r][c].value) {
+            cells[r][c].value = grid[r][c];
+            cells[r][c].style.background = 'var(--solved)';
+          }
+        }
+      }
+    }
+
+    function valid(grid, r, c, v) {
+      for (let i = 0; i < 9; i++) if (grid[r][i] === v || grid[i][c] === v) return false;
+      const br = Math.floor(r / 3) * 3;
+      const bc = Math.floor(c / 3) * 3;
+      for (let i = br; i < br + 3; i++)
+        for (let j = bc; j < bc + 3; j++)
+          if (grid[i][j] === v) return false;
+      return true;
+    }
+
+    function solveGrid(grid) {
+      for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+          if (grid[r][c] === 0) {
+            for (let n = 1; n <= 9; n++) {
+              if (valid(grid, r, c, n)) {
+                grid[r][c] = n;
+                if (solveGrid(grid)) return true;
+                grid[r][c] = 0;
+              }
+            }
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
+    function solve() {
+      const grid = getGrid();
+      if (solveGrid(grid)) setGrid(grid);
+      else alert('该题无解');
+    }
+
+    function clearBoard() {
+      for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+          cells[r][c].value = '';
+          cells[r][c].style.background = 'var(--cell-bg)';
+        }
+      }
+    }
+  </script>
+</body>
+</html>
