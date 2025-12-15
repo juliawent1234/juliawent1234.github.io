@@ -144,6 +144,26 @@
   }
 });
 
+  input.addEventListener('keydown', (e) => {
+  if (e.key === 'Backspace' && input.value === '') {
+    let pr = r;
+    let pc = c - 1;
+
+    if (pc < 0) {
+      pc = 8;
+      pr--;
+    }
+
+    if (pr >= 0) {
+      cells[pr][pc].focus();
+      cells[pr][pc].value = '';
+    }
+
+    e.preventDefault();
+  }
+});
+
+
 
         board.appendChild(input);
         cells[r][c] = input;
