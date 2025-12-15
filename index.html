@@ -127,8 +127,23 @@
         if (r === 2 || r === 5) input.classList.add('b-bottom');
 
         input.addEventListener('input', () => {
-          if (!/^[1-9]$/.test(input.value)) input.value = '';
-        });
+  if (!/^[1-9]$/.test(input.value)) {
+    input.value = '';
+    return;
+  }
+
+  // 自动跳到下一个格子
+  let nr = r;
+  let nc = c + 1;
+  if (nc > 8) {
+    nc = 0;
+    nr++;
+  }
+  if (nr < 9) {
+    cells[nr][nc].focus();
+  }
+});
+
 
         board.appendChild(input);
         cells[r][c] = input;
