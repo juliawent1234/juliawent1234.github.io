@@ -144,7 +144,7 @@
   }
 });
 
-  input.addEventListener('keydown', (e) => {
+        input.addEventListener('keydown', (e) => {
   if (e.key === 'Backspace' && input.value === '') {
     let pr = r;
     let pc = c - 1;
@@ -162,9 +162,6 @@
     e.preventDefault();
   }
 });
-
-
-
         board.appendChild(input);
         cells[r][c] = input;
       }
