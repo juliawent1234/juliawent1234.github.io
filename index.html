@@ -127,41 +127,47 @@
         if (r === 2 || r === 5) input.classList.add('b-bottom');
 
         input.addEventListener('input', () => {
-  if (!/^[1-9]$/.test(input.value)) {
-    input.value = '';
-    return;
-  }
+          if (!/^[1-9]$/.test(input.value)) {
+            input.value = '';
+            return;
+          }
 
-  // 自动跳到下一个格子
-  let nr = r;
-  let nc = c + 1;
-  if (nc > 8) {
-    nc = 0;
-    nr++;
-  }
-  if (nr < 9) {
-    cells[nr][nc].focus();
-  }
-});
+          // 自动跳到下一个格子
+          let nr = r;
+          let nc = c + 1;
+          if (nc > 8) {
+            nc = 0;
+            nr++;
+          }
+          if (nr < 9) {
+            cells[nr][nc].focus();
+          }
+        });
 
         input.addEventListener('keydown', (e) => {
-  if (e.key === 'Backspace' && input.value === '') {
-    let pr = r;
-    let pc = c - 1;
+          if (e.key === 'Backspace' && input.value === '') {
+            let pr = r;
+            let pc = c - 1;
 
-    if (pc < 0) {
-      pc = 8;
-      pr--;
-    }
+            if (pc < 0) {
+              pc = 8;
+              pr--;
+            }
 
-    if (pr >= 0) {
-      cells[pr][pc].focus();
-      cells[pr][pc].value = '';
-    }
+            if (pr >= 0) {
+              cells[pr][pc].focus();
+              cells[pr][pc].value = '';
+            }
 
-    e.preventDefault();
-  }
-});
+            e.preventDefault();
+          }
+
+          // 回车键执行求解
+          if (e.key === 'Enter') {
+            solve();
+          }
+        });
+
         board.appendChild(input);
         cells[r][c] = input;
       }
@@ -225,7 +231,8 @@
       }
     }
   </script>
-    <div class="note">
+
+  <div class="note">
     说明：本工具仅用于数独求解。请输入已知数字后点击“求解”，
     空格请留空。本页面为纯前端实现，不会保存任何数据。
     本工具为个人兴趣制作。制作人：大豆
