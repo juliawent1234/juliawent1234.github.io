@@ -1,40 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sudoku Solver</title>
+  <style>
+    :root {
+      --bg: #f3fffb;
+      --cell-bg: #ffffff;
+      --hl: #e5fff9;
+      --solved: #dff5eb;
+      --text: #23423e;
+      --line: #000000;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      margin: 20px 0 10px;
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: 2px;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      grid-template-rows: repeat(9, 1fr);
+      gap: 6px;
+      margin: 12px;
+    }
+
+    .cell {
+      width: 42px;
+      height: 42px;
+      text-align: center;
+      font-size: 20px;
+      border: 1px solid #cfe6e0;
+      background: var(--cell-bg);
+      color: var(--text);
+      outline: none;
+    }
+
+    .cell:focus {
+      background: var(--hl);
+    }
+
+    .cell.b-right {
+      border-right: 3px dashed var(--line);
+    }
+
+    .cell.b-bottom {
+      border-bottom: 3px dashed var(--line);
+    }
+
+    .controls {
+      margin: 10px 0 20px;
+    }
+
+    button {
+      padding: 6px 16px;
+      margin: 0 6px;
+      font-size: 14px;
+      background: #e0f7f2;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.85;
+    }
+
+    .note {
+      max-width: 420px;
+      margin: 10px 16px 24px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #4a6f68;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>SUDOKU SOLVER</h1>
+
+  <div class="board" id="board"></div>
+
+  <div class="controls">
+    <button onclick="clearBoard()">清空</button>
+    <button onclick="solve()">求解</button>
+  </div>
+
+  <div class="note">
+    说明：输入 1–9 自动跳格；空格表示留空并跳过；  
+    Backspace 为空时返回前一格；Enter 直接求解。  
+    本工具为个人兴趣制作。
+  </div>
+
 <script>
   const board = document.getElementById('board');
   const cells = [];
-
-  function moveNext(r, c) {
-    let nr = r;
-    let nc = c + 1;
-    if (nc > 8) {
-      nc = 0;
-      nr++;
-    }
-    if (nr < 9) cells[nr][nc].focus();
-  }
-
-  function movePrev(r, c) {
-    let pr = r;
-    let pc = c - 1;
-    if (pc < 0) {
-      pc = 8;
-      pr--;
-    }
-    if (pr >= 0) cells[pr][pc].focus();
-  }
-
-  function moveByArrow(r, c, key) {
-    let nr = r;
-    let nc = c;
-
-    if (key === 'ArrowUp') nr--;
-    if (key === 'ArrowDown') nr++;
-    if (key === 'ArrowLeft') nc--;
-    if (key === 'ArrowRight') nc++;
-
-    if (nr >= 0 && nr < 9 && nc >= 0 && nc < 9) {
-      cells[nr][nc].focus();
-    }
-  }
 
   for (let r = 0; r < 9; r++) {
     cells[r] = [];
@@ -47,7 +122,6 @@
       if (c === 2 || c === 5) input.classList.add('b-right');
       if (r === 2 || r === 5) input.classList.add('b-bottom');
 
-      // 输入 1-9 自动跳格
       input.addEventListener('input', () => {
         if (!/^[1-9]$/.test(input.value)) {
           input.value = '';
@@ -57,46 +131,49 @@
       });
 
       input.addEventListener('keydown', (e) => {
-        // Space 跳过
-        if (e.code === 'Space') {
+        // 空格：清空并跳到下一格
+        if (e.key === ' ') {
           input.value = '';
           moveNext(r, c);
           e.preventDefault();
-          return;
         }
 
-        // Backspace 行为
-        if (e.key === 'Backspace') {
-          if (input.value !== '') {
-            input.value = '';
-          } else {
-            movePrev(r, c);
-            let pr = r;
-            let pc = c - 1;
-            if (pc < 0) {
-              pc = 8;
-              pr--;
-            }
-            if (pr >= 0) cells[pr][pc].value = '';
+        // Backspace：为空则回到前一格
+        if (e.key === 'Backspace' && input.value === '') {
+          let pr = r;
+          let pc = c - 1;
+          if (pc < 0) {
+            pc = 8;
+            pr--;
+          }
+          if (pr >= 0) {
+            cells[pr][pc].focus();
+            cells[pr][pc].value = '';
           }
           e.preventDefault();
-          return;
         }
 
-        // 方向键移动
-        if (
-          e.key === 'ArrowUp' ||
-          e.key === 'ArrowDown' ||
-          e.key === 'ArrowLeft' ||
-          e.key === 'ArrowRight'
-        ) {
-          moveByArrow(r, c, e.key);
+        // Enter：直接求解
+        if (e.key === 'Enter') {
+          solve();
           e.preventDefault();
         }
       });
 
       board.appendChild(input);
       cells[r][c] = input;
+    }
+  }
+
+  function moveNext(r, c) {
+    let nr = r;
+    let nc = c + 1;
+    if (nc > 8) {
+      nc = 0;
+      nr++;
+    }
+    if (nr < 9) {
+      cells[nr][nc].focus();
     }
   }
 
@@ -118,13 +195,11 @@
   function valid(grid, r, c, v) {
     for (let i = 0; i < 9; i++)
       if (grid[r][i] === v || grid[i][c] === v) return false;
-
     const br = Math.floor(r / 3) * 3;
     const bc = Math.floor(c / 3) * 3;
     for (let i = br; i < br + 3; i++)
       for (let j = bc; j < bc + 3; j++)
         if (grid[i][j] === v) return false;
-
     return true;
   }
 
@@ -161,3 +236,5 @@
     }
   }
 </script>
+</body>
+</html>
