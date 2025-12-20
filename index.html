@@ -5,15 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sudoku Solver</title>
   <style>
-      .note {
-      max-width: 420px;
-      margin: 10px 16px 24px;
-      font-size: 13px;
-      line-height: 1.6;
-      color: #4a6f68;
-      text-align: center;
-    }
-
     :root {
       --bg: #f3fffb;
       --cell-bg: #ffffff;
@@ -63,10 +54,10 @@
       background: var(--hl);
     }
 
-    /* 粗虚线分区 */
     .cell.b-right {
       border-right: 3px dashed var(--line);
     }
+
     .cell.b-bottom {
       border-bottom: 3px dashed var(--line);
     }
@@ -89,18 +80,17 @@
       opacity: 0.85;
     }
 
-    @media (max-width: 480px) {
-      h1 {
-        font-size: 26px;
-      }
-      .cell {
-        width: 52px;
-        height: 52px;
-        font-size: 22px;
-      }
+    .note {
+      max-width: 420px;
+      margin: 10px 16px 24px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #4a6f68;
+      text-align: center;
     }
   </style>
 </head>
+
 <body>
   <h1>SUDOKU SOLVER</h1>
 
@@ -111,131 +101,140 @@
     <button onclick="solve()">求解</button>
   </div>
 
-  <script>
-    const board = document.getElementById('board');
-    const cells = [];
-
-    for (let r = 0; r < 9; r++) {
-      cells[r] = [];
-      for (let c = 0; c < 9; c++) {
-        const input = document.createElement('input');
-        input.className = 'cell';
-        input.maxLength = 1;
-        input.inputMode = 'numeric';
-
-        if (c === 2 || c === 5) input.classList.add('b-right');
-        if (r === 2 || r === 5) input.classList.add('b-bottom');
-
-        input.addEventListener('input', () => {
-          if (!/^[1-9]$/.test(input.value)) {
-            input.value = '';
-            return;
-          }
-
-          // 自动跳到下一个格子
-          let nr = r;
-          let nc = c + 1;
-          if (nc > 8) {
-            nc = 0;
-            nr++;
-          }
-          if (nr < 9) {
-            cells[nr][nc].focus();
-          }
-        });
-
-        input.addEventListener('keydown', (e) => {
-          if (e.key === 'Backspace' && input.value === '') {
-            let pr = r;
-            let pc = c - 1;
-
-            if (pc < 0) {
-              pc = 8;
-              pr--;
-            }
-
-            if (pr >= 0) {
-              cells[pr][pc].focus();
-              cells[pr][pc].value = '';
-            }
-
-            e.preventDefault();
-          }
-
-          // 回车键执行求解
-          if (e.key === 'Enter') {
-            solve();
-          }
-        });
-
-        board.appendChild(input);
-        cells[r][c] = input;
-      }
-    }
-
-    function getGrid() {
-      return cells.map(row => row.map(c => parseInt(c.value) || 0));
-    }
-
-    function setGrid(grid) {
-      for (let r = 0; r < 9; r++) {
-        for (let c = 0; c < 9; c++) {
-          if (!cells[r][c].value) {
-            cells[r][c].value = grid[r][c];
-            cells[r][c].style.background = 'var(--solved)';
-          }
-        }
-      }
-    }
-
-    function valid(grid, r, c, v) {
-      for (let i = 0; i < 9; i++) if (grid[r][i] === v || grid[i][c] === v) return false;
-      const br = Math.floor(r / 3) * 3;
-      const bc = Math.floor(c / 3) * 3;
-      for (let i = br; i < br + 3; i++)
-        for (let j = bc; j < bc + 3; j++)
-          if (grid[i][j] === v) return false;
-      return true;
-    }
-
-    function solveGrid(grid) {
-      for (let r = 0; r < 9; r++) {
-        for (let c = 0; c < 9; c++) {
-          if (grid[r][c] === 0) {
-            for (let n = 1; n <= 9; n++) {
-              if (valid(grid, r, c, n)) {
-                grid[r][c] = n;
-                if (solveGrid(grid)) return true;
-                grid[r][c] = 0;
-              }
-            }
-            return false;
-          }
-        }
-      }
-      return true;
-    }
-
-    function solve() {
-      const grid = getGrid();
-      if (solveGrid(grid)) setGrid(grid);
-      else alert('该题无解');
-    }
-
-    function clearBoard() {
-      for (let r = 0; r < 9; r++) {
-        for (let c = 0; c < 9; c++) {
-          cells[r][c].value = '';
-          cells[r][c].style.background = 'var(--cell-bg)';
-        }
-      }
-    }
-  </script>
-
   <div class="note">
-    说明：本工具仅用于数独求解。请输入已知数字后点击“求解”，
-    空格请留空。本页面为纯前端实现，不会保存任何数据。
-    本工具为个人兴趣制作。制作人：大豆
+    说明：输入 1–9 自动跳格；空格表示留空并跳过；  
+    Backspace 为空时返回前一格；Enter 直接求解。  
+    本工具为个人兴趣制作。
   </div>
+
+<script>
+  const board = document.getElementById('board');
+  const cells = [];
+
+  for (let r = 0; r < 9; r++) {
+    cells[r] = [];
+    for (let c = 0; c < 9; c++) {
+      const input = document.createElement('input');
+      input.className = 'cell';
+      input.maxLength = 1;
+      input.inputMode = 'numeric';
+
+      if (c === 2 || c === 5) input.classList.add('b-right');
+      if (r === 2 || r === 5) input.classList.add('b-bottom');
+
+      input.addEventListener('input', () => {
+        if (!/^[1-9]$/.test(input.value)) {
+          input.value = '';
+          return;
+        }
+        moveNext(r, c);
+      });
+
+      input.addEventListener('keydown', (e) => {
+        // 空格：清空并跳到下一格
+        if (e.key === ' ') {
+          input.value = '';
+          moveNext(r, c);
+          e.preventDefault();
+        }
+
+        // Backspace：为空则回到前一格
+        if (e.key === 'Backspace' && input.value === '') {
+          let pr = r;
+          let pc = c - 1;
+          if (pc < 0) {
+            pc = 8;
+            pr--;
+          }
+          if (pr >= 0) {
+            cells[pr][pc].focus();
+            cells[pr][pc].value = '';
+          }
+          e.preventDefault();
+        }
+
+        // Enter：直接求解
+        if (e.key === 'Enter') {
+          solve();
+          e.preventDefault();
+        }
+      });
+
+      board.appendChild(input);
+      cells[r][c] = input;
+    }
+  }
+
+  function moveNext(r, c) {
+    let nr = r;
+    let nc = c + 1;
+    if (nc > 8) {
+      nc = 0;
+      nr++;
+    }
+    if (nr < 9) {
+      cells[nr][nc].focus();
+    }
+  }
+
+  function getGrid() {
+    return cells.map(row => row.map(c => parseInt(c.value) || 0));
+  }
+
+  function setGrid(grid) {
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        if (!cells[r][c].value) {
+          cells[r][c].value = grid[r][c];
+          cells[r][c].style.background = 'var(--solved)';
+        }
+      }
+    }
+  }
+
+  function valid(grid, r, c, v) {
+    for (let i = 0; i < 9; i++)
+      if (grid[r][i] === v || grid[i][c] === v) return false;
+    const br = Math.floor(r / 3) * 3;
+    const bc = Math.floor(c / 3) * 3;
+    for (let i = br; i < br + 3; i++)
+      for (let j = bc; j < bc + 3; j++)
+        if (grid[i][j] === v) return false;
+    return true;
+  }
+
+  function solveGrid(grid) {
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        if (grid[r][c] === 0) {
+          for (let n = 1; n <= 9; n++) {
+            if (valid(grid, r, c, n)) {
+              grid[r][c] = n;
+              if (solveGrid(grid)) return true;
+              grid[r][c] = 0;
+            }
+          }
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  function solve() {
+    const grid = getGrid();
+    if (solveGrid(grid)) setGrid(grid);
+    else alert('该题无解');
+  }
+
+  function clearBoard() {
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        cells[r][c].value = '';
+        cells[r][c].style.background = 'var(--cell-bg)';
+      }
+    }
+  }
+</script>
 </body>
 </html>
